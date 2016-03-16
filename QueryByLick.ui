@@ -88,7 +88,7 @@
      <enum>Qt::Vertical</enum>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QLineEdit" name="tempoEdit">
     <property name="geometry">
      <rect>
       <x>30</x>

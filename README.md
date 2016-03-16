@@ -27,3 +27,7 @@ be lost! If you make changes to the QueryByLick.ui file in QT Designer, run
 C:\Python34\Lib\site-packages\PyQt5\pyuic5.bat -x QueryByLick.ui -o mainwindow.py
 
 within the project directory to update the generated python code.
+
+### TODO
+
+
