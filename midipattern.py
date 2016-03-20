@@ -1,5 +1,5 @@
 # code for parsing a pattern indicated by an input MIDI file and searching the Weimar Jazz Database for solos containing that pattern
-# should connect with main.py to receive the tempo and input file information
+# should connect with main.py to receive the tempo and input file's filename
 
 import subprocess
 
