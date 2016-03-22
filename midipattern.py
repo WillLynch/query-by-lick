@@ -1,5 +1,7 @@
 # code for parsing a pattern indicated by an input MIDI file and searching the Weimar Jazz Database for solos containing that pattern
-# should connect with main.py to receive the tempo and input file's filename
+# should be imported by main.py
+# first call getPattern with user-inputted tempo and input file name as parameter
+# returns (or will return) list of all solos containing the lick indicated by the input MIDI file, sorted by similarity to the input lick
 
 import subprocess
 
@@ -16,39 +18,10 @@ def getIOI(onset):
     elif onset > 280:
         return 2
 
-# tempo variable, specified by user in GUI - CHANGE THIS
-# should be expressed as float representing seconds per beat. Divide 60.0 by tempo if it is expressed in BPM
-tempo = 0.500
-
-# midiin and csvout specified by results of user input - CHANGE THIS
-# invokes melconv to convert the midi input file to output
-midiin = "midi/filename.mid"
-csvout = "filename.csv"
-subprocess.call(["melconv", "-f", "mcsv1", "-i", midiin])
-
-# starting with an empty list, append all the notes represented in the .csv file
-# the first two lines are metadata and can be ignored, every other note is represented as a list
-notes = []
-with open(csvout, 'r') as f:
-    for x in f.read().splitlines():
-        notes.append(x.split(';'))
-    notes = notes[2:]
-
-# calculate intervals between successive notes, measured in semitones
-pitch = []
-for i in range(1, len(notes)):
-    pitch.append(int(notes[i][5])-int(notes[i-1][5]))    
-
-# calculate milliseconds between onsets, and convert that millisecond value to percentage of the tempo
-# pass that value to the getIOI method to obtain IOI classes
-ioi = []
-for i in range(1, len(notes)):
-    ioi.append(getIOI(int(100 * ((float(notes[i][0]) - float(notes[i-1][0])) / tempo))))
-
 # takes an int indicating the nth search, writes the config, and runs the search
-def runSearch(n):
+def runSearch(ioi, pitch):
     cfg = "qbl_cfg.yml"
-    result = "qbl_search_" + str(n)
+    result = "qbl_out.csv"
     with open(cfg, 'w') as f:
         # specify current directory as read/write path, as well as which layer of search this is 
         # can be extended if user wishes to use a different directory
@@ -73,8 +46,34 @@ def runSearch(n):
     
     subprocess.call(["melpat", "-c", cfg])
 
-# placeholder: just run search once, to exactly match the entered pattern    
-runSearch(1)
+# takes as input user-specified tempo and midi input file, converts .mid to .csv, gets all the notes' information, and executes a search with that information  
+def getPattern(tempo, midiin):
+    # invokes melconv to convert the midi input file to output
+    csvout = "filename.csv"
+    subprocess.call(["melconv", "-f", "mcsv1", "-i", midiin])
 
-# to do: figure out exactly how multiple searches should be executed (nontrivial)
-# Loop through all output files and return an ordered list containing information including artist name, song, tempo, pitch, onset of lick (trivial)
+    # starting with an empty list, append all the notes represented in the .csv file
+    # the first two lines are metadata and can be ignored, every other note is represented as a list
+    notes = []
+    with open(csvout, 'r') as f:
+        for x in f.read().splitlines():
+            notes.append(x.split(';'))
+        notes = notes[2:]
+
+    # calculate intervals between successive notes, measured in semitones
+    pitch = []
+    for i in range(1, len(notes)):
+        pitch.append(int(notes[i][5])-int(notes[i-1][5]))    
+
+    # calculate milliseconds between onsets, and convert that millisecond value to percentage of the tempo
+    # pass that value to the getIOI method to obtain IOI classes
+    ioi = []
+    for i in range(1, len(notes)):
+        ioi.append(getIOI(int(100 * ((float(notes[i][0]) - float(notes[i-1][0])) / tempo))))
+    
+    # placeholder: just run search once, to exactly match the entered pattern    
+    runSearch(ioi, pitch)
+
+# to do: 
+#   alter pitch and/or ioi lists to allow some variation in the input licks, probably using regular expressions (nontrivial)
+#   write function that looks at the output results file after an executed search and examines the patterns in the solos, sorting them by similarity to the input lick (trivial)
