@@ -5,6 +5,7 @@
 
 import subprocess
 
+MIDI_DIR = 'midi/'
 # takes an int representing a percentage and returns the inter-onset interval class corresponding to that percentage
 def getIOI(onset):
     if onset < 35:
@@ -19,7 +20,7 @@ def getIOI(onset):
         return 2
 
 # takes an int indicating the nth search, writes the config, and runs the search
-def runSearch(ioi, pitch):
+def runSearch(ioi, pitch, notes):
     cfg = "qbl_cfg.yml"
     result = "qbl_out.csv"
     with open(cfg, 'w') as f:
@@ -49,8 +50,9 @@ def runSearch(ioi, pitch):
 # takes as input user-specified tempo and midi input file, converts .mid to .csv, gets all the notes' information, and executes a search with that information  
 def getPattern(tempo, midiin):
     # invokes melconv to convert the midi input file to output
-    csvout = "filename.csv"
-    subprocess.call(["melconv", "-f", "mcsv1", "-i", midiin])
+    midiinpath = MIDI_DIR + midiin + '.mid'
+    csvout = midiin + ".csv"
+    subprocess.call(["melconv", "-f", "mcsv1", "-i", midiinpath])
 
     # starting with an empty list, append all the notes represented in the .csv file
     # the first two lines are metadata and can be ignored, every other note is represented as a list
@@ -72,7 +74,7 @@ def getPattern(tempo, midiin):
         ioi.append(getIOI(int(100 * ((float(notes[i][0]) - float(notes[i-1][0])) / tempo))))
     
     # placeholder: just run search once, to exactly match the entered pattern    
-    runSearch(ioi, pitch)
+    runSearch(ioi, pitch, notes)
 
 # to do: 
 #   alter pitch and/or ioi lists to allow some variation in the input licks, probably using regular expressions (nontrivial)

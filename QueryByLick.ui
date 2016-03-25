@@ -65,7 +65,7 @@
      <string>TextLabel</string>
     </property>
    </widget>
-   <widget class="QListWidget" name="midiFileList">
+   <widget class="QListWidget" name="midiFileDisplayList">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -135,6 +135,42 @@
     </property>
     <property name="text">
      <string>Midi Input</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="queryButton">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>510</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Query</string>
+    </property>
+   </widget>
+   <widget class="QTableView" name="tableView">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>70</y>
+      <width>651</width>
+      <height>571</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>40</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Result Set</string>
     </property>
    </widget>
   </widget>

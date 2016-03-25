@@ -10,12 +10,14 @@ entering a musical phrase directly from a MIDI keyboard.
 Dependencies
 ------------
 
-PyQt 5
-Python 3.2 or higher
-Pygame 1.9.1
+*PyQt 5
+*Python 3.2 or higher
+*Pygame 1.9.1
+*MeloPySuite
+*Weimar jazz database
 
-PIP Dependencies
-mido
+### PIP Dependencies
+*mido
 
 
 Development
@@ -29,5 +31,8 @@ C:\Python34\Lib\site-packages\PyQt5\pyuic5.bat -x QueryByLick.ui -o mainwindow.p
 within the project directory to update the generated python code.
 
 ### TODO
+
+* output csv files somewhere other than root directory
+* display results of query in GUI
 
 

@@ -9,11 +9,15 @@ from PyQt5 import QtGui, QtWidgets, QtCore
 from datetime import timedelta
 from pygame import midi, time
 from mido.midifiles import MidiTrack, MidiFile, Message, MetaMessage
+import midipattern
+import os
 
 recording = False
 MIDI_DIR = 'midi/'
 
 class MidiCaptureThread(QtCore.QThread):
+    """ Thread runs in background to collect midi input notes when user hits record
+    """
     def __init__(self, midiInput, noteList):
         QtCore.QThread.__init__(self)
         self.inst = midi.Input(midiInput)
@@ -36,9 +40,11 @@ class QueryByLickMainWindow(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.setupUi(self)
         self.recordButton.clicked.connect(self.record)
         self.stopRecordButton.clicked.connect(self.stopRecord)
+        self.queryButton.clicked.connect(self.queryDB)
         self.midiDevice = 1
         self.recorder = None
         self.noteList = []
+        self.midiFileList = []
         self.numberOfLicks = 0;
         self.recordingTimer = QtCore.QTimer(self)
         self.recordingTimer.setInterval(1000)
@@ -52,6 +58,24 @@ class QueryByLickMainWindow(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             if pygame.midi.get_device_info(i)[2] == 1:
                 self.midiInputSelector.addItem(str(pygame.midi.get_device_info(i)[1]))
         self.midiInputSelector.currentIndexChanged.connect(self.selectMidiDevice)
+
+        # populate lick list with preexisting licks
+        for fn in os.listdir(MIDI_DIR):
+            f_name = fn.split(".")[0]
+            tempo = int(f_name.split("-")[1])
+            self.midiFileDisplayList.addItem(f_name)
+            self.midiFileList.append((f_name, tempo))
+            self.numberOfLicks += 1
+
+    def queryDB(self):
+        """
+        query Weimar jazz database for melodic segment selected in list
+        """
+        selection = self.midiFileDisplayList.selectedIndexes()[0].row()
+        filename = self.midiFileList[selection][0]
+        tempo = self.midiFileList[selection][1]
+        print (selection)
+        midipattern.getPattern(tempo, filename)
 
     def selectMidiDevice(self):
         self.midiDevice = self.midiInputSelector.currentIndex()
@@ -70,7 +94,7 @@ class QueryByLickMainWindow(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.recorder = MidiCaptureThread(self.midiDevice, self.noteList)
             self.recorder.start()
         except Exception:
-            QtWidgets.QMessageBox.about(self, 'Error','Input can only be a number')
+            QtWidgets.QMessageBox.about(self, 'Error','Tempo must only be a number')
             pass
 
     def stopRecord(self):
@@ -83,10 +107,11 @@ class QueryByLickMainWindow(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.writeNoteListToMidiFile()
 
     def writeNoteListToMidiFile(self):
-        with MidiFile() as mid:
+        with MidiFile(type=0) as mid:
             track = MidiTrack()
             mid.tracks.append(track)
             track.append(MetaMessage('set_tempo', tempo=mido.bpm2tempo(self.tempo)))
+            track.append(MetaMessage('time_signature', numerator=4, denominator=4))
             if self.noteList[0][0][0] == 144:
                 track.append(Message('note_on', note=self.noteList[0][0][1], velocity=self.noteList[0][0][2], time=0))
             for i in range(1, len(self.noteList)):
@@ -101,9 +126,10 @@ class QueryByLickMainWindow(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                     track.append(Message('note_off', note=noteEvent[0][1], velocity=noteEvent[0][2], \
                                          time=(int(milliSecondsToTicks(noteEvent[1], mido.bpm2tempo(self.tempo), mid.ticks_per_beat))) - \
                                               int(milliSecondsToTicks(lastEvent[1], mido.bpm2tempo(self.tempo), mid.ticks_per_beat))))
-            lickFileName = 'lick' + str(self.numberOfLicks)
+            lickFileName = 'lick' + str(self.numberOfLicks) + '-' + str(self.tempo)
             mid.save(MIDI_DIR + lickFileName + '.mid')
-            self.midiFileList.addItem(lickFileName)
+            self.midiFileDisplayList.addItem(lickFileName)
+            self.midiFileList.append((lickFileName, self.tempo))
             self.numberOfLicks += 1
         self.noteList = []
 
