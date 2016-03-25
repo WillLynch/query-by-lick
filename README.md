@@ -10,14 +10,14 @@ entering a musical phrase directly from a MIDI keyboard.
 Dependencies
 ------------
 
-*PyQt 5
-*Python 3.2 or higher
-*Pygame 1.9.1
-*MeloPySuite
-*Weimar jazz database
+* PyQt 5
+* Python 3.2 or higher
+* Pygame 1.9.1
+* MeloPySuite
+* Weimar jazz database
 
 ### PIP Dependencies
-*mido
+* mido
 
 
 Development
