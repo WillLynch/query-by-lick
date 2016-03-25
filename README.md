@@ -13,8 +13,8 @@ Dependencies
 * PyQt 5
 * Python 3.2 or higher
 * Pygame 1.9.1
-* MeloPySuite
-* Weimar jazz database
+* MeloSpySuite
+* Weimar jazz database (sqlite file placed in root directory of project)
 
 ### PIP Dependencies
 * mido
@@ -23,7 +23,7 @@ Dependencies
 Development
 -----------
 
-I have been using QT Designer to generate the mainwindows.py file. If you make changes to this file manually, they will
+Note: I have been using QT Designer to generate the mainwindows.py file. If you make changes to this file manually, they will
 be lost! If you make changes to the QueryByLick.ui file in QT Designer, run
 
 C:\Python34\Lib\site-packages\PyQt5\pyuic5.bat -x QueryByLick.ui -o mainwindow.py
@@ -33,6 +33,8 @@ within the project directory to update the generated python code.
 ### TODO
 
 * output csv files somewhere other than root directory
-* display results of query in GUI
+* display results of query in GUI (in progress)
+* alter regex to allow fuzzy searching
+* implement edit distance index to rank results
 
 
