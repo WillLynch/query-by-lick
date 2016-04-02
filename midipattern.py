@@ -6,6 +6,8 @@
 import subprocess
 
 MIDI_DIR = 'midi/'
+# CSV_DIR = 'csv/'
+
 # takes an int representing a percentage and returns the inter-onset interval class corresponding to that percentage
 def getIOI(onset):
     if onset < 35:
@@ -18,6 +20,25 @@ def getIOI(onset):
         return 1
     elif onset > 280:
         return 2
+
+# takes a list of ints representing semitone intervals and returns 
+def approximate(pitch):
+    pitchnew = []
+    for x in pitch:
+        if (x != 0):
+            pitchnew.append('[')
+            if (x > 1 or x < -1):
+                pitchnew.append(x-1)
+                pitchnew.append('-')
+                pitchnew.append(x+1)
+            else:
+                pitchnew.append(x)
+                pitchnew.append('-')
+                pitchnew.append(x*2)
+            pitchnew.append(']')
+        else:
+            pitchnew.append(x)
+    return pitchnew
 
 # takes an int indicating the nth search, writes the config, and runs the search
 def runSearch(ioi, pitch, notes):
@@ -40,9 +61,9 @@ def runSearch(ioi, pitch, notes):
         # can be extended if user wishes to use a different location for the wjazzd
         f.write("database:\n  type: sqlite3\n  path: wjazzd.db\n  password: None\n  use: True\n\n")
         
-        # make requests: begin with IOI class search, and filter based on those semitone interval patterns which match the input lick
-        f.write("requests:\n -\n    transform: ioiclass-rel\n    pattern: " + str(ioi) + "\n")
-        f.write("    secondary:\n      transform: interval\n      pattern: " + str(pitch) + "\n")
+        # make requests: begin with semitone search, and filter based on those IOI class patterns which match the input lick
+        f.write("requests:\n -\n    transform: interval\n    pattern: " + str(pitch) + "\n")
+        f.write("    secondary:\n      transform: ioiclass-rel\n      pattern: " + str(ioi) + "\n")
         f.write("      operation: match\n    display: list")
     
     subprocess.call(["melpat", "-c", cfg])
@@ -72,10 +93,9 @@ def getPattern(tempo, midiin):
     ioi = []
     for i in range(1, len(notes)):
         ioi.append(getIOI(int(100 * ((float(notes[i][0]) - float(notes[i-1][0])) / tempo))))
-    
-    # placeholder: just run search once, to exactly match the entered pattern    
-    runSearch(ioi, pitch, notes)
+        
+    runSearch(ioi, approximate(pitch), notes)
 
 # to do: 
 #   alter pitch and/or ioi lists to allow some variation in the input licks, probably using regular expressions (nontrivial)
-#   write function that looks at the output results file after an executed search and examines the patterns in the solos, sorting them by similarity to the input lick (trivial)
+#   write function that looks at the output results file after an executed search and examines the patterns in the solos, sorting them by similarity to the input lick
