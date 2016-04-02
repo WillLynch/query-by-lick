@@ -31,9 +31,9 @@ def runSearch(ioi, pitch, notes):
         # length of input MIDI file is max N-gram length
         f.write("maxN: " + str(len(notes)) + "\n\n")
         
-        # write trivial/static information - search all pieces by all musicians in the database
+        # write trivial/static information - search all pieces by all musicians in the database except Impressions which is huge
         f.write("tunes:\n\n - query:\n    conditions:\n      solo_info:\n")
-        f.write("        performer: '%'\n        title: '%'\n")
+        f.write("        performer: '%'\n        title: '~Impressions%'\n")
         f.write("    display:\n      transcription_info: filename_sv\n    type: sv\n\n")
         
         # specify database location, since we want to search the wjazzd 
