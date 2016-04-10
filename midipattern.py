@@ -39,11 +39,40 @@ def approximate(pitch):
         else:
             pitchnew.append(x)
     return pitchnew
+    
+# takes two lists of ints of same length and returns number of operations required to make the first list match the second
+def editDistance(orig, result):
+    dist = 0
+    for i in range(len(orig)):
+        if orig[i] != result[i]:
+            dist += 1
+    return dist
+    
+# takes the name of a file full of results to sort and outputs a new file with the results sorted by edit distance
+def sortFile(tfile, lick):
+    sorted = "qbl_out.csv"
+    results = []
+    # read all returned licks so they can be sorted
+    with open(tfile, 'r') as f:
+        for x in f.read().splitlines():
+            results.append(x.split(';'))
+        results = results[1:]
+    # compute edit distance and sort the licks
+    for x in results:
+        x.insert(0, editDistance(lick, x[6]))
+    results.sort()
+    # write the sorted licks to a .csv file in the same format as the initial output file
+    with open(sorted, 'w') as f:
+        for x in results:
+            f.write(x[1])
+            for y in x[2:]:
+                f.write(";" + y)
+            f.write("\n")
 
-# takes an int indicating the nth search, writes the config, and runs the search
+# takes lists representing the IOI data, pitch data (allowing approximate pitch matches), and exact lick data, writes the config, and runs the search
 def runSearch(ioi, pitch, notes):
     cfg = "qbl_cfg.yml"
-    result = "qbl_out.csv"
+    result = "qbl_tmp.csv"
     with open(cfg, 'w') as f:
         # specify current directory as read/write path, as well as which layer of search this is 
         # can be extended if user wishes to use a different directory
@@ -67,6 +96,7 @@ def runSearch(ioi, pitch, notes):
         f.write("      operation: match\n    display: list")
     
     subprocess.call(["melpat", "-c", cfg])
+    sortFile(result, notes)
 
 # takes as input user-specified tempo and midi input file, converts .mid to .csv, gets all the notes' information, and executes a search with that information  
 def getPattern(tempo, midiin):
