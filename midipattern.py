@@ -63,6 +63,7 @@ def sortFile(tfile, lick):
     results.sort()
     # write the sorted licks to a .csv file in the same format as the initial output file
     with open(sorted, 'w') as f:
+        f.write("id;start;N;onset;dur;metricalposition;value;freq;prob100\n")
         for x in results:
             f.write(x[1])
             for y in x[2:]:
