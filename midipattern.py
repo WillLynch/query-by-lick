@@ -56,22 +56,26 @@ def sortFile(tfile, lick):
     with open(tfile, 'r') as f:
         for x in f.read().splitlines():
             results.append(x.split(';'))
+        # skip first line which is just filedata
         results = results[1:]
+    
     # compute edit distance and sort the licks
     for x in results:
-        x.insert(0, editDistance(lick, x[6]))
+        x.insert(0, editDistance(lick, list(map(int, x[6][1:-1].split(', ')))))
     results.sort()
+    
     # write the sorted licks to a .csv file in the same format as the initial output file
     with open(sorted, 'w') as f:
         f.write("id;start;N;onset;dur;metricalposition;value;freq;prob100\n")
         for x in results:
+            # write the solo ID, then the rest of the data separated by semicolons to avoid fencepost errors
             f.write(x[1])
             for y in x[2:]:
                 f.write(";" + y)
             f.write("\n")
 
 # takes lists representing the IOI data, pitch data (allowing approximate pitch matches), and exact lick data, writes the config, and runs the search
-def runSearch(ioi, pitch, notes):
+def runSearch(ioi, pitch, lick):
     cfg = "qbl_cfg.yml"
     result = "qbl_tmp.csv"
     with open(cfg, 'w') as f:
@@ -80,7 +84,7 @@ def runSearch(ioi, pitch, notes):
         f.write("dir: .\noutdir: .\noutfile: " + result + "\n\n")
         
         # length of input MIDI file is max N-gram length
-        f.write("maxN: " + str(len(notes)) + "\n\n")
+        f.write("maxN: " + str(len(lick)+1) + "\n\n")
         
         # write trivial/static information - search all pieces by all musicians in the database except Impressions which is huge
         f.write("tunes:\n\n - query:\n    conditions:\n      solo_info:\n")
@@ -97,7 +101,7 @@ def runSearch(ioi, pitch, notes):
         f.write("      operation: match\n    display: list")
     
     subprocess.call(["melpat", "-c", cfg])
-    sortFile(result, notes)
+    sortFile(result, lick)
 
 # takes as input user-specified tempo and midi input file, converts .mid to .csv, gets all the notes' information, and executes a search with that information  
 def getPattern(tempo, midiin):
@@ -125,7 +129,7 @@ def getPattern(tempo, midiin):
     for i in range(1, len(notes)):
         ioi.append(getIOI(int(100 * ((float(notes[i][0]) - float(notes[i-1][0])) / tempo))))
         
-    runSearch(ioi, approximate(pitch), notes)
+    runSearch(ioi, approximate(pitch), pitch)
 
 # to do: 
 #   alter pitch and/or ioi lists to allow some variation in the input licks, probably using regular expressions (nontrivial)
